@@ -29,8 +29,8 @@ class TimelineHomePage extends StatelessWidget {
                 subtitle: Text("Category: ${dataset.category}"),
                 trailing: const Icon(Icons.play_arrow),
                 onTap: () {
-                  // Navigate to animation page with dataset ID
-                  Get.to(() => TimelineAnimationPage(datasetId: dataset.id!));
+                  // Navigate to new animation page with dataset ID
+                  Get.to(() => TimelineCarouselPage(datasetId: dataset.id!));
                 },
               ),
             );

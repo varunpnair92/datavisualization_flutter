@@ -5,23 +5,20 @@ import 'package:datavisual/entity_controller.dart';
 import 'package:datavisual/details_controller.dart';
 import 'package:datavisual/models.dart';
 
-class TimelineAnimationPage extends StatefulWidget {
+class TimelineCarouselPage extends StatefulWidget {
   final int datasetId;
-  const TimelineAnimationPage({super.key, required this.datasetId});
+  const TimelineCarouselPage({super.key, required this.datasetId});
 
   @override
-  State<TimelineAnimationPage> createState() => _TimelineAnimationPageState();
+  State<TimelineCarouselPage> createState() => _TimelineCarouselPageState();
 }
 
-class _TimelineAnimationPageState extends State<TimelineAnimationPage> {
+class _TimelineCarouselPageState extends State<TimelineCarouselPage> {
   final entityController = Get.put(EntityController());
   final detailController = Get.put(DetailController());
 
-  final ScrollController scrollController = ScrollController();
-  final List<Entity> animatedEntities = [];
+  PageController pageController = PageController(viewportFraction: 0.7);
   Timer? timer;
-  int currentIndex = 0;
-  bool isAnimating = false;
 
   @override
   void initState() {
@@ -32,119 +29,116 @@ class _TimelineAnimationPageState extends State<TimelineAnimationPage> {
   Future<void> fetchData() async {
     await entityController.fetchEntities();
     await detailController.fetchDetails();
+    startAutoPlay();
+    setState(() {});
   }
 
-  void startAnimation() {
-    if (isAnimating) return;
-
-    setState(() {
-      animatedEntities.clear();
-      currentIndex = 0;
-      isAnimating = true;
-    });
-
+  void startAutoPlay() {
     final datasetEntities = entityController.entities
         .where((e) => e.dataset == widget.datasetId)
         .toList();
 
+    if (datasetEntities.isEmpty) return;
+
     timer?.cancel();
-    timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (currentIndex < datasetEntities.length) {
-        setState(() {
-          animatedEntities.add(datasetEntities[currentIndex]);
-        });
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (scrollController.hasClients) {
-            scrollController.animateTo(
-              scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          }
-        });
-
-        currentIndex++;
-      } else {
-        t.cancel();
-        setState(() => isAnimating = false);
+    int index = 0;
+    timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (pageController.hasClients) {
+        pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 2500),
+          curve: Curves.easeInOut,
+        );
+        index = (index + 1) % datasetEntities.length;
       }
     });
   }
 
-  void showImagePreview(String imageUrl) {
+  void showImage(String url) {
     showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        child: InteractiveViewer(
-          child: Image.network(imageUrl),
-        ),
-      ),
-    );
+        context: context,
+        builder: (_) => Dialog(
+              child: InteractiveViewer(child: Image.network(url)),
+            ));
   }
 
   @override
   void dispose() {
     timer?.cancel();
-    scrollController.dispose();
+    pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Timeline Animation")),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: startAnimation,
-              child: const Text("Play Timeline"),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              controller: scrollController,
-              itemCount: animatedEntities.length,
-              itemBuilder: (context, index) {
-                final entity = animatedEntities[index];
-                final entityDetails = detailController.details
-                    .where((d) => d.entity == entity.id)
-                    .toList();
+    final datasetEntities = entityController.entities
+        .where((e) => e.dataset == widget.datasetId)
+        .toList();
 
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                  child: ListTile(
-                    leading: entity.imageUrl != null
-                        ? GestureDetector(
-                            onTap: () => showImagePreview(entity.imageUrl!),
-                            child: Image.network(
-                              entity.imageUrl!,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  const Icon(Icons.broken_image),
-                            ),
-                          )
-                        : const Icon(Icons.image_not_supported, size: 60),
-                    title: Text(entity.name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (entity.volume != null) Text(entity.volume!),
-                        ...entityDetails.map((d) => Text(d.details)),
-                      ],
-                    ),
-                  ),
-                );
-              },
+    return Scaffold(
+      appBar: AppBar(title: const Text("Timeline Carousel")),
+      body: datasetEntities.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: SizedBox(
+                height: 800,
+                child: PageView.builder(
+                  controller: pageController,
+                  itemCount: datasetEntities.length,
+                  itemBuilder: (context, index) {
+                    final entity = datasetEntities[index];
+                    final entityDetails = detailController.details
+                        .where((d) => d.entity == entity.id)
+                        .toList();
+
+                    return Transform.scale(
+                      scale: index == pageController.page?.round() ? 1.0 : 0.85,
+                      child: GestureDetector(
+                        onTap: entity.imageUrl != null
+                            ? () => showImage(entity.imageUrl!)
+                            : null,
+                        child: Card(
+                          elevation: 8,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          child: Column(
+                            children: [
+                              if (entity.imageUrl != null)
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(16)),
+                                  child: Image.network(
+                                    entity.imageUrl!,
+                                    width: double.infinity,
+                                    height: 600,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    Text(entity.name,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold)),
+                                    if (entity.volume != null)
+                                      Text("Volume: ${entity.volume}"),
+                                    ...entityDetails
+                                        .map((d) => Text(d.details))
+                                        .toList(),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-        ],
-      ),
     );
   }
 }
