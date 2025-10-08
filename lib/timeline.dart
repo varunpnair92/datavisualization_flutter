@@ -54,7 +54,8 @@ class TimelineViewPage extends StatelessWidget {
                         )
                       : const Icon(Icons.image_not_supported),
                   title: Text(entity.name),
-                  subtitle: Text(entity.volume ?? ""),
+                  subtitle: Text(entity.volume?.toString() ?? "")
+,
                   children: entityDetails
                       .map((d) => ListTile(title: Text(d.details)))
                       .toList(),

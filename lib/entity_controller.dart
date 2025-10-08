@@ -11,23 +11,51 @@ class EntityController extends GetxController {
   var isLoading = false.obs;
 
   /// Fetch all entities
+  // Future<void> fetchEntities() async {
+  //   try {
+  //     isLoading(true);
+  //     final response = await http.get(Uri.parse("${AppConfig.baseUrl}/entities/"));
+  //     if (response.statusCode == 200) {
+  //       entities.value = (jsonDecode(response.body) as List)
+  //           .map((e) => Entity.fromJson(e))
+  //           .toList();
+  //     } else {
+  //       print("Error fetching entities: ${response.body}");
+  //     }
+  //   } catch (e) {
+  //     print("Exception fetching entities: $e");
+  //   } finally {
+  //     isLoading(false);
+  //   }
+  // }
+
+
   Future<void> fetchEntities() async {
-    try {
-      isLoading(true);
-      final response = await http.get(Uri.parse("${AppConfig.baseUrl}/entities/"));
-      if (response.statusCode == 200) {
-        entities.value = (jsonDecode(response.body) as List)
-            .map((e) => Entity.fromJson(e))
-            .toList();
-      } else {
-        print("Error fetching entities: ${response.body}");
-      }
-    } catch (e) {
-      print("Exception fetching entities: $e");
-    } finally {
-      isLoading(false);
+  try {
+    isLoading(true);
+    final response = await http.get(Uri.parse("${AppConfig.baseUrl}/entities/"));
+    if (response.statusCode == 200) {
+      entities.value = (jsonDecode(response.body) as List)
+          .map((e) => Entity.fromJson(e))
+          .toList();
+
+      // ✅ Sort by volume ascending
+      entities.sort((a, b) {
+        // Handle nulls just in case
+        final v1 = a.volume ?? 0;
+        final v2 = b.volume ?? 0;
+        return v1.compareTo(v2);
+      });
+    } else {
+      print("Error fetching entities: ${response.body}");
     }
+  } catch (e) {
+    print("Exception fetching entities: $e");
+  } finally {
+    isLoading(false);
   }
+}
+
 
   /// Create a new entity with image upload
   Future<bool> createEntity({

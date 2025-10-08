@@ -34,7 +34,8 @@ class Entity {
   final int? id;
   final int dataset;
   final String name;
-  final String? volume;
+  final double? volume; // <-- change here
+
   final String? imageUrl;
 
   Entity({
