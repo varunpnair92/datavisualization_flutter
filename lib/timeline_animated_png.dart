@@ -98,11 +98,12 @@ class _ContinuousTimelinePageState extends State<ContinuousTimelinePage> {
                           ? () => showImage(entity.imageUrl!)
                           : null,
                       child: Container(
-                        width: MediaQuery.of(context).size.width * 0.7,
+                        width: MediaQuery.of(context).size.width/3,
                         margin: const EdgeInsets.symmetric(horizontal: 8),
+                        alignment: Alignment.topCenter,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: Colors.grey[900],
+                         // color: Colors.grey[900],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -114,10 +115,13 @@ class _ContinuousTimelinePageState extends State<ContinuousTimelinePage> {
                                   borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(12),
                                   ),
-                                  child: Image.network(
-                                    entity.imageUrl!,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
+                                  child:Expanded(
+                                    child: Image.network(
+                                      entity.imageUrl!,
+                                      fit: BoxFit.contain,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
                                   ),
                                 ),
                               ),
