@@ -75,7 +75,7 @@ class _ContinuousTimelinePageState extends State<ContinuousTimelinePage> {
         .toList();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white10,
       appBar: AppBar(title: const Text("Timeline Viewer")),
       body: !isLoaded
           ? const Center(child: CircularProgressIndicator())
