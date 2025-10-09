@@ -30,7 +30,7 @@ class TimelineHomePage extends StatelessWidget {
                 trailing: const Icon(Icons.play_arrow),
                 onTap: () {
                   // Navigate to new animation page with dataset ID
-                  Get.to(() => ContinuousImageSlider(datasetId: dataset.id!));
+                  Get.to(() => ContinuousTimelinePage(datasetId: dataset.id!));
                 },
               ),
             );

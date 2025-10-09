@@ -4,32 +4,25 @@ import 'package:get/get.dart';
 import 'package:datavisual/entity_controller.dart';
 import 'package:datavisual/details_controller.dart';
 
-class ContinuousImageSlider extends StatefulWidget {
+class ContinuousTimelinePage extends StatefulWidget {
   final int datasetId;
-  const ContinuousImageSlider({super.key, required this.datasetId});
+  const ContinuousTimelinePage({super.key, required this.datasetId});
 
   @override
-  State<ContinuousImageSlider> createState() => _ContinuousImageSliderState();
+  State<ContinuousTimelinePage> createState() => _ContinuousTimelinePageState();
 }
 
-class _ContinuousImageSliderState extends State<ContinuousImageSlider>
-    with SingleTickerProviderStateMixin {
+class _ContinuousTimelinePageState extends State<ContinuousTimelinePage> {
   final entityController = Get.put(EntityController());
   final detailController = Get.put(DetailController());
-  bool isLoaded = false;
 
-  late final ScrollController _scrollController;
-  late final AnimationController _animationController;
+  final ScrollController _scrollController = ScrollController();
+  bool isLoaded = false;
   double scrollSpeed = 50; // pixels per second
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(days: 1),
-    );
     fetchData();
   }
 
@@ -51,16 +44,26 @@ class _ContinuousImageSliderState extends State<ContinuousImageSlider>
       final next = current + (scrollSpeed / fps);
 
       if (next >= maxScroll) {
-        _scrollController.jumpTo(0); // loop back like a train
+        timer.cancel(); // stop at the end
       } else {
         _scrollController.jumpTo(next);
       }
     });
   }
 
+  void showImage(String url) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        child: InteractiveViewer(
+          child: Image.network(url, fit: BoxFit.cover),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    _animationController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -73,29 +76,86 @@ class _ContinuousImageSliderState extends State<ContinuousImageSlider>
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: isLoaded
-          ? datasetEntities.isEmpty
+      appBar: AppBar(title: const Text("Timeline Viewer")),
+      body: !isLoaded
+          ? const Center(child: CircularProgressIndicator())
+          : datasetEntities.isEmpty
               ? const Center(
-                  child: Text("No images found",
+                  child: Text("No entities found",
                       style: TextStyle(color: Colors.white)))
               : ListView.builder(
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
-                  itemCount: datasetEntities.length * 2, // duplicate for looping
+                  itemCount: datasetEntities.length,
                   itemBuilder: (context, index) {
-                    final entity =
-                        datasetEntities[index % datasetEntities.length];
-                    return entity.imageUrl != null
-                        ? Image.network(
-                            entity.imageUrl!,
-                            fit: BoxFit.cover,
-                            width: MediaQuery.of(context).size.width/2,
-                            height: MediaQuery.of(context).size.height/3,
-                          )
-                        : const SizedBox.shrink();
+                    final entity = datasetEntities[index];
+                    final entityDetails = detailController.details
+                        .where((d) => d.entity == entity.id)
+                        .toList();
+
+                    return GestureDetector(
+                      onTap: entity.imageUrl != null
+                          ? () => showImage(entity.imageUrl!)
+                          : null,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.7,
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.grey[900],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Image fills container
+                            if (entity.imageUrl != null)
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(12),
+                                  ),
+                                  child: Image.network(
+                                    entity.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                  ),
+                                ),
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entity.name,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  if (entity.volume != null)
+                                    Text(
+                                      "Volume: ${entity.volume}",
+                                      style: const TextStyle(
+                                          color: Colors.white70),
+                                    ),
+                                  ...entityDetails.map(
+                                    (d) => Text(
+                                      d.details,
+                                      style: const TextStyle(
+                                          color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   },
-                )
-          : const Center(child: CircularProgressIndicator()),
+                ),
     );
   }
 }

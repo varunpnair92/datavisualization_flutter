@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           name: '/timeline-animated',
           page: () {
             final datasetId = Get.arguments as int;
-            return ContinuousImageSlider(datasetId: datasetId);
+            return ContinuousTimelinePage(datasetId: datasetId);
           },
         ),
       ],
