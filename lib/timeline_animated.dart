@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:datavisual/entity_controller.dart';
 import 'package:datavisual/details_controller.dart';
-import 'package:datavisual/models.dart';
 
-class TimelineCarouselPage extends StatefulWidget {
+
+class TimelineCarouselPage2 extends StatefulWidget {
   final int datasetId;
-  const TimelineCarouselPage({super.key, required this.datasetId});
+  const TimelineCarouselPage2({super.key, required this.datasetId});
 
   @override
-  State<TimelineCarouselPage> createState() => _TimelineCarouselPageState();
+  State<TimelineCarouselPage2> createState() => _TimelineCarouselPageState();
 }
 
-class _TimelineCarouselPageState extends State<TimelineCarouselPage> {
+class _TimelineCarouselPageState extends State<TimelineCarouselPage2> {
   final entityController = Get.put(EntityController());
   final detailController = Get.put(DetailController());
 

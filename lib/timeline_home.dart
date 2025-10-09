@@ -1,4 +1,4 @@
-import 'package:datavisual/timeline_animated.dart';
+import 'package:datavisual/timeline_animated_png.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:datavisual/data_controller.dart';
@@ -30,7 +30,7 @@ class TimelineHomePage extends StatelessWidget {
                 trailing: const Icon(Icons.play_arrow),
                 onTap: () {
                   // Navigate to new animation page with dataset ID
-                  Get.to(() => TimelineCarouselPage(datasetId: dataset.id!));
+                  Get.to(() => ContinuousImageSlider(datasetId: dataset.id!));
                 },
               ),
             );

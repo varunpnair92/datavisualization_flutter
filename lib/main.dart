@@ -1,3 +1,4 @@
+import 'package:datavisual/timeline_animated_png.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:datavisual/home.dart';
@@ -6,7 +7,6 @@ import 'package:datavisual/entity_form.dart';
 import 'package:datavisual/details_form.dart';
 import 'package:datavisual/timeline.dart';
 import 'package:datavisual/timeline_home.dart';
-import 'package:datavisual/timeline_animated.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           name: '/timeline-animated',
           page: () {
             final datasetId = Get.arguments as int;
-            return TimelineCarouselPage(datasetId: datasetId);
+            return ContinuousImageSlider(datasetId: datasetId);
           },
         ),
       ],
