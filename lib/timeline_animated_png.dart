@@ -30,7 +30,9 @@ class _ContinuousTimelinePageState extends State<ContinuousTimelinePage> {
     await entityController.fetchEntities();
     await detailController.fetchDetails();
     setState(() => isLoaded = true);
-    startAutoScroll();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) startAutoScroll();
+    });
   }
 
   void startAutoScroll() {
@@ -94,70 +96,72 @@ class _ContinuousTimelinePageState extends State<ContinuousTimelinePage> {
                         .toList();
 
                     return GestureDetector(
-                      onTap: entity.imageUrl != null
-                          ? () => showImage(entity.imageUrl!)
-                          : null,
-                      child: Container(
-                        width: MediaQuery.of(context).size.width/3,
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        alignment: Alignment.topCenter,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                         // color: Colors.grey[900],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Image fills container
-                            if (entity.imageUrl != null)
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12),
-                                  ),
-                                  child:Expanded(
-                                    child: Image.network(
-                                      entity.imageUrl!,
-                                      fit: BoxFit.contain,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entity.name,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  if (entity.volume != null)
-                                    Text(
-                                      "Volume: ${entity.volume}",
-                                      style: const TextStyle(
-                                          color: Colors.white70),
-                                    ),
-                                  ...entityDetails.map(
-                                    (d) => Text(
-                                      d.details,
-                                      style: const TextStyle(
-                                          color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+  onTap: entity.imageUrl != null
+      ? () => showImage(entity.imageUrl!)
+      : null,
+  child: Container(
+    width: MediaQuery.of(context).size.width / 3,
+    margin: const EdgeInsets.symmetric(horizontal: 6),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Name ABOVE image
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text(
+            entity.name,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+        ),
+
+        // Image in middle
+        if (entity.imageUrl != null)
+          AspectRatio(
+            aspectRatio: 1, // keeps image square; adjust if needed
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                entity.imageUrl!,
+                fit: BoxFit.contain,
+                width: double.infinity,
+              ),
+            ),
+          ),
+
+        // Details BELOW image
+        Padding(
+          padding: const EdgeInsets.all(6.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (entity.volume != null)
+                Text(
+                  textAlign: TextAlign.center,
+                  "Volume: ${entity.volume}",
+                  style: const TextStyle(color: Colors.green),
+                ),
+              ...entityDetails.map(
+                (d) => Text(
+                  d.details,
+                  style: const TextStyle(color: Colors.greenAccent),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+);
+
                   },
                 ),
     );
